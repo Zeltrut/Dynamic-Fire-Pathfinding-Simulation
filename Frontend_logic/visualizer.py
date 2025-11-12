@@ -142,7 +142,6 @@ class FireSimulationApp:
         random.seed(self.current_seed)
         np.random.seed(self.current_seed)
         
-        # FIXED CALL: Only passing 4 arguments now
         self.path, self.cost, _, _ = a_star_3d(
             self.grid, 
             self.stairwell_coords, 
