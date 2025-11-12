@@ -1,0 +1,1 @@
+# Images go into the assets folder to support the visualization of the project

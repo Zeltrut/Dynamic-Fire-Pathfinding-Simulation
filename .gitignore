@@ -1,0 +1,22 @@
+# python system files
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# environments
+venv/
+env/
+.venv/
+
+# simulation output
+*_metrics.csv
+*.csv
+
+# vscode and its addons
+.vscode/
+.idea/
+
+# junk
+.DS_Store
+Thumbs.db
