@@ -15,6 +15,13 @@ import random
 import os
 import time
 
+# --- FIX PYTHON PATH SO WE CAN IMPORT Backend_logic ---
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
+
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+
 # --- IMPORT BACKEND ---
 from Backend_logic.grid_and_algorithm_search import (
     initializing_fire_charcter,
@@ -45,7 +52,7 @@ class Animation:
 
 TILE_W = 64   
 TILE_H = 32   
-FLOOR_H = 48 
+FLOOR_H = 40 
 
 COLORS = {
     'background': (25, 20, 35),
@@ -89,7 +96,7 @@ class FireSimulationApp:
         self.animations = {}
         self.load_assets()
         
-        self.step_delay = 500  
+        self.step_delay = 1000  
         self.last_step_time = 0
         self.state = 'SIMULATING' 
         
@@ -110,22 +117,53 @@ class FireSimulationApp:
         return frames
 
     def load_assets(self):
-        slime_frames = self.load_sprite_sheet('assets/agent_slime.png', 16, 16, 3)
-        if slime_frames: self.animations['agent'] = Animation(slime_frames, 150)
-        
-        fire_frames = self.load_sprite_sheet('assets/fire.png', 32, 32, 2)
-        if fire_frames: self.animations['fire'] = Animation(fire_frames, 100)
+        slime_path = 'assets/agent_slime.png'
+        if os.path.exists(slime_path):
+            slime_frames = self.load_sprite_sheet(slime_path, 32, 32, 3)
+            if slime_frames:
+                self.animations['agent'] = Animation(slime_frames, 150)
+
+        fire_path = 'assets/fire4.png'
+        if os.path.exists(fire_path):
+            fire_frames = self.load_sprite_sheet(fire_path, 64, 64, 2)
+            if fire_frames:
+                self.animations['fire'] = Animation(fire_frames, 100)
 
         def load_tile(name, path, size=(TILE_W, TILE_H)):
             if os.path.exists(path):
                 img = pygame.image.load(path).convert_alpha()
                 self.assets[name] = pygame.transform.scale(img, size)
-            else: self.assets[name] = None
-                
-        load_tile('floor', 'assets/floor.png')
-        load_tile('stair', 'assets/stair.png', size=(TILE_W, FLOOR_H + TILE_H)) 
-        load_tile('exit', 'assets/exit.png')
-        self.assets['ui_panel'] = None 
+            else:
+                self.assets[name] = None
+
+        tilesheet_path = 'assets/stone_tiles.png'
+        if os.path.exists(tilesheet_path):
+            sheet = pygame.image.load(tilesheet_path).convert_alpha()
+
+            sheet_cols = 6
+            sheet_rows = 5
+            tile_w = sheet.get_width()  // sheet_cols
+            tile_h = sheet.get_height() // sheet_rows
+
+            col = 1
+            row = 3
+
+            rect = pygame.Rect(col * tile_w, row * tile_h, tile_w, tile_h)
+            floor_img = sheet.subsurface(rect)
+
+            floor_img = pygame.transform.smoothscale(floor_img, (TILE_W, TILE_H))
+            self.assets['floor'] = floor_img
+        else:
+            self.assets['floor'] = None
+
+        load_tile('stair', 'assets/stair.png', size=(TILE_W, FLOOR_H + TILE_H))
+        load_tile('exit', 'assets/exit.png', size=(TILE_W, FLOOR_H + TILE_H))
+        load_tile('smoke', 'assets/smoke.png', size=(TILE_W, FLOOR_H + TILE_H))
+        load_tile('ui_panel', 'assets/ui_panel.png', size=(250, 250))
+
+
+
+
 
     def reset_simulation(self):
         self.current_seed = random.randint(0, 10000)
@@ -185,6 +223,7 @@ class FireSimulationApp:
                     self.current_step = min(self.current_step, len(self.path) - 1)
                 self.agent_pos = self.path[self.current_step]
 
+
     def draw_tile(self, surface, x, y, z, color_key, img_key=None, img_offset_y=0, alpha=255):
         sx, sy = self.cart_to_iso(x, y, z)
         points = [
@@ -225,7 +264,7 @@ class FireSimulationApp:
         agent_z = self.agent_pos[2]
         
         for z in range(self.H):
-            alpha = 40 if z > agent_z else 255
+            alpha = 10 if z > agent_z else 255
             for y in range(self.W):
                 for x in range(self.L):
                     node_val = current_fire_grid[x, y, z]
@@ -236,7 +275,7 @@ class FireSimulationApp:
                     if (x, y, z) == self.main_exit_coord: img_key, color_key = 'exit', 'exit'
                     elif (x, y, z) in self.stairwell_coords:
                         img_key, color_key = 'stair', 'stair'
-                        img_offset = FLOOR_H / 2 
+                        img_offset = 0 #FLOOR_H / 2 
                     
                     if node_val == 2: img_key, color_key, img_offset = 'fire', 'fire', TILE_H 
                     elif node_val == 1: img_key, color_key, img_offset = 'smoke', 'smoke', TILE_H
@@ -248,15 +287,29 @@ class FireSimulationApp:
 
     def draw_ui(self):
         ui_rect = pygame.Rect(self.SCREEN_WIDTH - 240, 10, 230, 200)
-        panel = pygame.Surface(ui_rect.size, pygame.SRCALPHA); panel.fill(COLORS['ui_bg'])
-        self.screen.blit(panel, ui_rect.topleft)
-        
+
+        if self.assets.get('ui_panel'):
+            panel_img = pygame.transform.scale(self.assets['ui_panel'], ui_rect.size)
+            self.screen.blit(panel_img, ui_rect.topleft)
+        else:
+            panel = pygame.Surface(ui_rect.size, pygame.SRCALPHA)
+            panel.fill(COLORS['ui_bg'])
+            self.screen.blit(panel, ui_rect.topleft)
+
         y = ui_rect.top + 10
-        def txt(t, off): self.screen.blit(self.font_sm.render(t, True, COLORS['text']), (ui_rect.left + 10, y + off))
+        def txt(t, off):
+            self.screen.blit(
+                self.font_sm.render(t, True, COLORS['text']),
+                (ui_rect.left + 10, y + off)
+            )
+
         txt(f"Step: {self.current_step}", 0)
         txt(f"Floor: {self.agent_pos[2]}", 20)
         txt(f"Path Cost: {int(self.cost)}", 40)
         txt("[SPACE] Pause  [R] Reset", 80)
+        txt(f"Algorithm: A* 3D", 120)
+        txt(f"Seed: {self.current_seed}", 140)
+
 
     def draw_pause_menu(self):
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)

@@ -19,4 +19,6 @@ env/
 
 # junk
 .DS_Store
-Thumbs.db
+Thumbs.dbven/
+__pycache__/
+.DS_Store
