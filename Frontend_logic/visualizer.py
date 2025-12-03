@@ -16,6 +16,20 @@ import heapq
 import os
 import time
 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))       # .../Dynamic-Fire.../Frontend_logic
+PROJECT_ROOT = os.path.dirname(CURRENT_DIR)                    # .../Dynamic-Fire-Pathfinding-Simulation
+
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+from Backend_logic.grid_and_algorithm_search import (
+    initializing_fire_charcter,
+    fire_state,
+    precompute_fire_spread,
+    a_star_3d,
+    get_movement_cost,
+    fire_spreading
+)
+'''
 # bring in the backend
 try:
     import Backend_logic.grid_and_algorithm_search as backend
@@ -27,7 +41,7 @@ initializing_fire_charcter = backend.initializing_fire_charcter
 fire_state = backend.fire_state
 fire_spreading = backend.fire_spreading
 get_movement_cost = backend.get_movement_cost
-
+'''
 # logic definitions
 
 def precompute_fire_spread(initial_fire, steps=100, slow_spread_rate=0.03, fast_spread_rate=0.06):
