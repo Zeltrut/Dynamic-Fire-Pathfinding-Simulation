@@ -20,6 +20,7 @@ dist/
 # vscode and its addons
 .vscode/
 .idea/
+.history/
 
 # junk
 .DS_Store
