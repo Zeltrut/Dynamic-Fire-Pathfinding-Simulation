@@ -16,11 +16,21 @@ import heapq
 import os
 import time
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))       # .../Dynamic-Fire.../Frontend_logic
-PROJECT_ROOT = os.path.dirname(CURRENT_DIR)                    # .../Dynamic-Fire-Pathfinding-Simulation
+# for pyinstaller support, so it works more smoothly
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))      # .../Dynamic-Fire.../Frontend_logic
+PROJECT_ROOT = os.path.dirname(CURRENT_DIR)                   # .../Dynamic-Fire-Pathfinding-Simulation
 
 if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
+
 from Backend_logic.grid_and_algorithm_search import (
     initializing_fire_charcter,
     fire_state,
@@ -29,19 +39,7 @@ from Backend_logic.grid_and_algorithm_search import (
     get_movement_cost,
     fire_spreading
 )
-'''
-# bring in the backend
-try:
-    import Backend_logic.grid_and_algorithm_search as backend
-except Exception as e:
-    print(f"Backend loaded with warning: {e}")
 
-# map backend functions
-initializing_fire_charcter = backend.initializing_fire_charcter
-fire_state = backend.fire_state
-fire_spreading = backend.fire_spreading
-get_movement_cost = backend.get_movement_cost
-'''
 # logic definitions
 
 def precompute_fire_spread(initial_fire, steps=100, slow_spread_rate=0.03, fast_spread_rate=0.06):
@@ -77,11 +75,11 @@ def a_star_3d(grid, stairwell_coords, main_exit_coord, fire_timeline, start_pos)
         if current_layer == 0: goal = main_exit_coord
         else:
             candidates = [(x, y, z) for x, y, z in stairwell_coords
-                         if z == current_layer and (not previous_stair or (x, y) != (previous_stair[0], previous_stair[1]))]
+                          if z == current_layer and (not previous_stair or (x, y) != (previous_stair[0], previous_stair[1]))]
             if candidates:
                 goal = min(candidates, key=lambda c: sum(get_movement_cost(fire_grid[nx, ny, nz])
-                                  for nx in range(c[0]-1, c[0]+2) for ny in range(c[1]-1, c[1]+2) for nz in [c[2]]
-                                  if 0 <= nx < L and 0 <= ny < W))
+                                                  for nx in range(c[0]-1, c[0]+2) for ny in range(c[1]-1, c[1]+2) for nz in [c[2]]
+                                                  if 0 <= nx < L and 0 <= ny < W))
             else: goal = current_pos
 
         frontier = []
@@ -210,8 +208,12 @@ class FireSimulationApp:
         self.reset_simulation()
 
     def load_sprite_sheet(self, path, frame_width, frame_height, scale):
-        if not os.path.exists(path): return None
-        sheet = pygame.image.load(path).convert_alpha()
+        full_path = resource_path(path)
+        if not os.path.exists(full_path): 
+            print(f"Error: Asset not found at {full_path}")
+            return None
+        sheet = pygame.image.load(full_path).convert_alpha()
+        # --------------------------------------------
         frames = []
         for y in range(0, sheet.get_height(), frame_height):
             for x in range(0, sheet.get_width(), frame_width):
@@ -225,17 +227,21 @@ class FireSimulationApp:
         if slime_frames: self.animations['agent'] = Animation(slime_frames, 150)
         
         # UI panel
-        ui_path = 'assets/ui_panel.png'
+        # Use resource_path
+        ui_path = resource_path('assets/ui_panel.png')
         if os.path.exists(ui_path):
             self.assets['ui_panel'] = pygame.image.load(ui_path).convert_alpha()
         else:
             self.assets['ui_panel'] = None
 
         def load_tile(name, path, size=(TILE_W, TILE_H)):
-            if os.path.exists(path):
-                img = pygame.image.load(path).convert_alpha()
+            full_path = resource_path(path)
+            if os.path.exists(full_path):
+                img = pygame.image.load(full_path).convert_alpha()
                 self.assets[name] = pygame.transform.scale(img, size)
-            else: self.assets[name] = None
+            else: 
+                print(f"Error: Asset not found at {full_path}")
+                self.assets[name] = None
                 
         load_tile('floor', 'assets/floor.png')
         load_tile('stair', 'assets/stair.png', size=(TILE_W, FLOOR_H + TILE_H)) 

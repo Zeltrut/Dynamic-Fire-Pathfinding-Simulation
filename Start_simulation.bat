@@ -1,46 +1,32 @@
 @echo off
-title Dynamic Fire Pathfinding Setup
+title Dynamic Fire Simulation Setup
+echo ==========================================
+echo  Setting up Dynamic Fire Pathfinding...
+echo ==========================================
 
-echo ========================================================
-echo  Checking System Configuration...
-echo ========================================================
-
-:: 1. Check if Python is installed
+:: 1. Check for Python
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Error: Python is not installed or not found in PATH.
-    echo Please install Python from python.org and try again.
+    echo Error: Python is not installed. Please install it to run this simulation.
     pause
     exit
 )
 
-:: 2. Check if Virtual Environment exists, if not then create it
+:: 2. Create Virtual Environment (if missing)
 if not exist venv (
-    echo Virtual Environment not found. Creating one now...
-    echo This may take a moment...
+    echo Creating virtual environment...
     python -m venv venv
 )
 
-:: 3. Activate that Virtual Environment
+:: 3. Install Dependencies
+echo Installing requirements...
 call venv\Scripts\activate
-
-:: 4. Install Dependencies automatically
-echo.
-echo Checking for required libraries (Pygame, Numpy)...
 pip install -r requirements.txt >nul 2>&1
 
-if %errorlevel% neq 0 (
-    echo.
-    echo Installing libraries failed. Trying to force install...
-    pip install pygame numpy pandas tqdm ipython
-)
-
-:: 5. Run the Simulation
+:: 4. Run the Simulation
 echo.
-echo ========================================================
-echo  Starting Simulation...
-echo ========================================================
+echo Starting Simulation...
 python run_simulation.py
 
-:: 6. Pause so they can see any errors if it crashes
+deactivate
 pause

@@ -3,11 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 .ipynb_checkpoints/
+*.pyc
 
 # environments
 venv/
 env/
 .venv/
+build/
+dist/
+*.spec
 
 # simulation output
 *_metrics.csv
