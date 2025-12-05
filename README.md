@@ -9,7 +9,7 @@ Our project simulates a building on fire, with available paths dynamically alter
 * **Danger Exposure**
 These metrics help to determine which method adapts better to a dynamic, and hazardous environment.
 
-## How to Run
+## How to Run (Windows ONLY), for MAC must install dependencies...
 
 ### **Option 1: Executable (Recommended)**
 Navigate to the **`WINDOWS`** folder and double click on: **`FireSim.exe`**
