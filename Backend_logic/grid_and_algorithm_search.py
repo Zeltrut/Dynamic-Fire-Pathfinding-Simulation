@@ -1,4 +1,5 @@
-'''
+''' grid_and_algorithm_search.py
+
 **work split**
 
 Giselle: Grid creation (labels), penalties/rewards cost, fire implementation
