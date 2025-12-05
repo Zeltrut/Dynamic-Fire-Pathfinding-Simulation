@@ -14,8 +14,9 @@ These metrics help to determine which method adapts better to a dynamic, and haz
 ### **Option 1: Executable (Recommended)**
 Navigate to the **`WINDOWS`** folder and double click on: **`FireSim.exe`**
 
-### **Option 2: Manual / Batch Script**
-If you prefer to run the project manually or use the launcher script, simply run: **`Start_simulation.bat`**
+### **Option 2: Manual (If you have all the dependencies)**
+If you prefer to run the project manually or use the launcher script, simply run: **`Start_simulation.bat`** OR **`python run_simulation.py`**
+
 
 ## Contributers
 
